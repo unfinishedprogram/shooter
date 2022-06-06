@@ -1,11 +1,12 @@
-import { WebSocketServer } from "ws";
+import WebSocket, { WebSocketServer } from "ws";
 import onMessage from "./onMessage";
 
-import { decodeMessage } from "../../shared/message";
+import { constructMessage, decodeMessage, encodeMessage } from "../../shared/message";
 
-const setupConnection = (socket: WebSocketServer) => {
+const setupConnection = (socket: WebSocket) => {
 	socket.on("message", (msg) => onMessage(decodeMessage(msg)));
 	console.log("connection established");
+	socket.send(encodeMessage(constructMessage("Hello")))
 }
 
 export default setupConnection;

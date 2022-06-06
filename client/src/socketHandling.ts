@@ -1,7 +1,7 @@
 import {constructMessage, Data, decodeMessage, encodeMessage, Message} from "../../shared/message";
 
-export const handleMessage = (data:Data) => {
-	console.log(decodeMessage(data));
+export const handleMessage = (event:MessageEvent<any>):any => {
+	console.log(decodeMessage(event.data));
 }
 
 export const sendMessage = (socket:WebSocket, msg:Message<any>) => {
@@ -9,8 +9,7 @@ export const sendMessage = (socket:WebSocket, msg:Message<any>) => {
 }
 
 export const setupSocket = (socket:WebSocket) => {
-	socket.onmessage = console.log;
-	
+	socket.onmessage = handleMessage;
 	sendMessage(socket, constructMessage({
 		state: {
 			"thing1": "value",
