@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "bash ./build.sh"
+    "build": "bash ./build.sh",
+    "dev": "vite build ./client/ --watch"
   },
   "author": "",
   "license": "ISC",

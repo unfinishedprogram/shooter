@@ -1,8 +1,5 @@
-alert("Making socket")
-
+import { setupSocket } from "./socketHandling";
 
 const socket = new WebSocket('ws://localhost:3000');
 
-socket.onopen = () => {
-	socket.send("Hello!")
-};
+socket.onopen = () => setupSocket(socket);
