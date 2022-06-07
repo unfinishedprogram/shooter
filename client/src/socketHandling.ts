@@ -10,10 +10,5 @@ export const sendMessage = (socket:WebSocket, msg:Message<any>) => {
 
 export const setupSocket = (socket:WebSocket) => {
 	socket.onmessage = handleMessage;
-	sendMessage(socket, constructMessage({
-		state: {
-			"thing1": "value",
-			"thing2": 123
-		}
-	}));
+	sendMessage(socket, constructMessage("ping", "Hello Server"));
 }
