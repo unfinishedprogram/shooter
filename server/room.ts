@@ -1,12 +1,12 @@
 import { WebSocket, WebSocketServer } from "ws";
 import { constructMessage, decodeMessage, encodeMessage, IMessageTypes, Message, MessageDataType, MessageType } from "../shared/message";
-import createMessageListenerBuffer from "../shared/messageListenerBuffer";
+import MessageSubject from "../shared/messageSubject";
 
-export default class Room {
+export default class Room extends MessageSubject{
 	clients:Set<WebSocket> = new Set();
-	listeners = createMessageListenerBuffer();
 
 	constructor(server:WebSocketServer) {
+		super();
 		server.on("connection", socket => this.addClient(socket));
 		server.on("close", () => this.clients.clear());
 	}
@@ -35,15 +35,7 @@ export default class Room {
 	}
 
 	private receiveMessage(socket:WebSocket, message:Message<MessageType>) {
-		this.listeners[message.meta.messageType].forEach(cb => cb(socket, message.data))
-	}
-
-	public on<T extends MessageType>(messageType:T, callback:(socket:WebSocket, data:MessageDataType<T>) => void) {
-		this.listeners[messageType].add(callback);
-	}
-	
-	public removeListener<T extends MessageType>(messageType:T, callback:(socket:WebSocket, data:MessageDataType<T>) => void) {
-		this.listeners[messageType].delete(callback);
+		this.updateListeners(socket, message);
 	}
 
 	public broadcastMessage(message:Message<MessageType>) {
