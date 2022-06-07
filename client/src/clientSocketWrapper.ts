@@ -2,7 +2,7 @@ import { decodeMessage, encodeMessage, Message, MessageType } from "../../shared
 import MessageSubject from "../../shared/messageSubject";
 import createMessageListenerBuffer from "../../shared/messageSubject"
 
-export default class SocketWrapper extends MessageSubject {
+export default class ClientSocketWrapper extends MessageSubject {
 	constructor(socket:WebSocket) {
 		super();
 		socket.onopen = () => {

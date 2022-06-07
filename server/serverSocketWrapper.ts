@@ -2,7 +2,7 @@ import { WebSocket, WebSocketServer } from "ws";
 import { constructMessage, decodeMessage, encodeMessage, IMessageTypes, Message, MessageDataType, MessageType } from "../shared/message";
 import MessageSubject from "../shared/messageSubject";
 
-export default class Room extends MessageSubject{
+export default class ServerSocketWrapper extends MessageSubject{
 	clients:Set<WebSocket> = new Set();
 
 	constructor(server:WebSocketServer) {
