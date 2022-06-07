@@ -1,8 +1,8 @@
-import SocketWrapper from "./SocketWrapper";
+import ClientSocketWrapper from "./clientSocketWrapper";
 
 const socket = new WebSocket('ws://localhost:3000');
 
-const wrapper = new SocketWrapper(socket);
+const wrapper = new ClientSocketWrapper(socket);
 
 wrapper.on("ping", (socket, data) => {
 	console.log(`ping: ${data}`);

@@ -3,8 +3,9 @@ import { createServer } from "http"
 import { fileURLToPath } from 'url';
 import { WebSocketServer } from 'ws';
 import * as path from "path";
-import Room from "./room";
+import Room from "./serverSocketWrapper";
 import onPing from "./handlers/ping";
+import ServerSocketWrapper from "./serverSocketWrapper";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ip = "localhost"
@@ -16,9 +17,9 @@ const staticPath = path.join(__dirname, '/public');
 
 app.use('/', _static(staticPath))
 
-const room = new Room(socketServer);
+const wrapper = new ServerSocketWrapper(socketServer);
 
-room.on("ping", onPing);
+wrapper.on("ping", onPing);
 
 console.log(`Listening at http://${ip}:${port}`);
 
