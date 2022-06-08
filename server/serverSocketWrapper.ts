@@ -6,9 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 export default class ServerSocketWrapper extends MessageSubject {
 	clients:Set<WebSocket> = new Set();
 
-	private clientsIdMap : {
-		[index:string]:WebSocket;
-	} = {};
+	private clientIdMap : Map<WebSocket, string> = new Map();
+	private idClientMap : Map<string, WebSocket> = new Map();
 
 	constructor(server:WebSocketServer) {
 		super();
@@ -16,14 +15,23 @@ export default class ServerSocketWrapper extends MessageSubject {
 		server.on("close", () => this.clients.clear());
 	}
 
-	private sendMessage(client:WebSocket, message:Message<MessageType>) {
+	private sendMessage(clientId:string, message:Message<MessageType>) {
+		const client = this.idClientMap.get(clientId);
+
+		if(client) {
+			this.sendMessageRaw(client, message);
+		} else {
+			console.error(`No client with id: ${clientId} , exists`);
+		}
+	}
+
+	private sendMessageRaw(client:WebSocket, message:Message<MessageType>){
 		client.send(encodeMessage(message));
 	}
 
 	private addClient(socket:WebSocket) {
 		this.handleClientIdAssign(socket)
 			.then(() => {
-				console.log(Object.keys(this.clientsIdMap));
 				socket.on("close", () => {
 					this.clients.delete(socket);
 				})
@@ -43,29 +51,37 @@ export default class ServerSocketWrapper extends MessageSubject {
 		return uuidv4();
 	}
 
+	private setClientId(client:WebSocket, id:string) {
+		this.clientIdMap.set(client, id);
+		this.idClientMap.set(id, client);
+		this.clients.add(client);
+	}
+
 	private handleClientIdAssign(socket:WebSocket):Promise<boolean> {
 		return new Promise((res, rej) => {
 			socket.once("message", (data) => {
 				const resObj = JSON.parse(`${data}`) as Message<"requestId">;
+				let id = "";
 				if(resObj.meta.messageType == "requestId") {
-					const id = this.genId();
-					this.sendMessage(socket, constructMessage("supplyId", id))
-					this.clientsIdMap[id] = socket;
+					id = this.genId();
+					this.sendMessageRaw(socket, constructMessage("supplyId", id))
+					this.setClientId(socket, id);
 					res(true)
 				} else if (resObj.meta.messageType == "supplyId") {
-					const id = resObj.data;
-					this.clientsIdMap[id] = socket;
-					res(true)
+					id = resObj.data;
 				}
+
+				this.setClientId(socket, id);
+				res(true);
 			}) 
 		})
 	}
 
 	private receiveMessage(socket:WebSocket, message:Message<MessageType>) {
-		this.updateListeners(message, (message => this.sendMessage(socket, message)));
+		this.updateListeners(message, (message => this.sendMessageRaw(socket, message)));
 	}
 
 	public broadcastMessage(message:Message<MessageType>) {
-		this.clients.forEach(c => this.sendMessage(c, message));
+		this.clients.forEach(c => this.sendMessageRaw(c, message));
 	}
 }
