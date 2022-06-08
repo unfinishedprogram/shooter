@@ -1,12 +1,19 @@
 export type Data = string | Buffer | ArrayBuffer | Buffer[];
 
-export interface IMessageTypes {
-	"ping":string,
+export const messageTypes = {
+	"ping": {} as string,
+	"requestId": {} as string,
+	"supplyId": {} as string,
 }
 
-export type MessageType = keyof IMessageTypes;
+export type MessageType = keyof typeof messageTypes;
 
-export type MessageDataType<T extends MessageType> = IMessageTypes[T];
+export type MessageDataType<T extends MessageType> = typeof messageTypes[T];
+
+export type MessageHandler<T extends MessageType> = ( 
+	data:MessageDataType<T>, 
+	respond: (message: Message<MessageType>) => void 
+) => void;
 
 export type Message<T extends MessageType> = {
 	meta: {

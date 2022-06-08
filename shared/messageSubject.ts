@@ -1,26 +1,35 @@
-import { WebSocket } from "ws";
-import { IMessageTypes, Message, MessageDataType, MessageType } from "./message";
+import { Message, MessageDataType, MessageType, messageTypes } from "./message";
 
+export type OnMessageCallback = (
+	data: MessageDataType<MessageType>, 
+	respond: MessageResponseCallback
+) => void;
+
+export type MessageResponseCallback = (message:Message<MessageType>) => void; 
+type MessageListeners =  {
+	[MessageType in keyof typeof messageTypes]: Set<OnMessageCallback>
+}
 
 export default class MessageSubject {
-	private listeners: {
-		[MessageType in keyof IMessageTypes]: 
-			Set<(socket:WebSocket, data:MessageDataType<MessageType>) => void>
-	} = {
-		ping: new Set(),
+	private listeners: MessageListeners = {} as MessageListeners;
+
+	constructor(){
+		for(let msgType in messageTypes) {
+			this.listeners[msgType as keyof typeof messageTypes] = new Set();
+		};
 	}
 
-	public on<T extends MessageType>(messageType:T, callback:(socket:WebSocket, data:MessageDataType<T>) => void) {
+	public on<T extends MessageType>(messageType:T, callback:OnMessageCallback) {
 		this.listeners[messageType].add(callback);
 	}
 	
-	public removeListener<T extends MessageType>(messageType:T, callback:(socket:WebSocket, data:MessageDataType<T>) => void) {
+	public removeListener<T extends MessageType>(messageType:T, callback:OnMessageCallback) {
 		this.listeners[messageType].delete(callback);
 	}
 
-	protected updateListeners(socket:WebSocket, message:Message<MessageType>) {
-		this.listeners[message.meta.messageType].forEach(cb => {
-			cb(socket, message.data);
+	protected updateListeners(message:Message<MessageType>, respond: (message:Message<MessageType>) => void) {
+		this.listeners[message.meta.messageType].forEach( cb => {
+			cb(message.data, respond);
 		})
 	}
 }

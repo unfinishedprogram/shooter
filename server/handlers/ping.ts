@@ -1,7 +1,9 @@
-import { WebSocket } from "ws";
+import { constructMessage } from "../../shared/message";
+import { MessageResponseCallback } from "../../shared/messageSubject";
 
-const onPing = (socket:WebSocket, data:string) => {
+const onPing = (data:string, respond:MessageResponseCallback) => {
 	console.log(`ping: ${data}`);
+	respond(constructMessage("ping", "This is a response"))
 }
 
 export default onPing;
